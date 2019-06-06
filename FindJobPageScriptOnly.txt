@@ -1,0 +1,150 @@
+global class FindJobPageScriptOnly {
+
+    public String candidateMail { get; set; }
+    public String Insertion { get; set; }
+    public String NewJobAppSet { get; set; }
+    public String CandidateId {get;set;}
+    public ContentVersion attac {get;set;}
+    public List<ContentVersion> attacList {get;set;}
+    public transient ContentVersion CVPhoto { get; set; }
+    public String thefilename {get;set;} 
+    public String thefileextension {get;set;}
+    public boolean PhotoCV {get;set;}
+    public String sessionID {get;set;} 
+
+    public FindJobPageScriptOnly() {
+
+    }
+
+
+    public PageReference checkLogin() {
+        if (UserInfo.getUserType() == 'Guest') {
+            PageReference loginPage = Page.FindJobPageScriptOnly;
+            loginPage.getParameters().put('retURL', ApexPages.currentPage().getUrl());
+            loginPage.setRedirect(true);
+            sessionID = UserInfo.getSessionId();
+            return loginPage;
+        } else {
+            return null;
+        }
+    }
+
+
+
+    
+  webservice static Id makeContact(String lastName, Account a) {
+        Contact c = new Contact(LastName = lastName, AccountId = a.Id);
+        return c.id;
+    }
+    
+    
+    
+    webservice static void insertNewPhoto(string cand_Mail, string newfile, string newfileName, string newfileextension){
+        system.debug('insertNewPhoto');
+        Blob thefileblob = EncodingUtil.base64Decode(newfile);
+        if([select Name, id from Candidate__c where Email__c = :cand_Mail limit 1].size() > 0){  //если есть кандидат с таким мейлом
+            Candidate__c cand = [select Name, id, PhotoURL__c from Candidate__c where Email__c = :cand_Mail limit 1]; //select current candidate 
+            //handling photo
+            if([select ContentLocation, PathOnClient, VersionData, Title, FirstPublishLocationId from ContentVersion where FirstPublishLocationId=:cand.id].size() > 0 && newfileName != '') {
+                system.debug('size: ' + [select ContentLocation, PathOnClient, VersionData, Title, FirstPublishLocationId from ContentVersion where FirstPublishLocationId=:cand.id].size());
+                List<ContentVersion> contentVersionList = [select Id, ContentLocation, PathOnClient, VersionData, Title, FirstPublishLocationId from ContentVersion where FirstPublishLocationId=:cand.id];
+                List<string> attId = new List<string>();
+                for(ContentVersion conver: contentVersionList){
+                    attId.add(conver.Id);
+                }
+                List<ContentVersion> ver = [select ContentDocument.Id from ContentVersion where Id IN:attId]; 
+                List<ContentDocument> docs = new List<ContentDocument>();
+                for(ContentVersion conver: ver){
+                    docs.add(conver.ContentDocument);
+                }                
+                delete docs; 
+            }else{
+                
+            }
+            if(newfileName != ''){
+            ContentVersion contVersion = new ContentVersion();
+            contVersion.ContentLocation = 'S';
+            contVersion.PathOnClient = newfileName + newfileextension;
+            contVersion.VersionData = thefileblob;
+            contVersion.Title = newfileName;
+            contVersion.FirstPublishLocationId = cand.id; 
+            contVersion.IsMajorVersion = false;
+            insert contVersion;                
+            }
+
+            if([select ContentDocumentId, ContentDocument.LatestPublishedVersionId from contentdocumentlink where LinkedEntityId = :cand.id].size() == 1 && newfileName != ''){
+                system.debug([select ContentDocumentId, ContentDocument.LatestPublishedVersionId from contentdocumentlink where LinkedEntityId = :cand.id].size());
+            ContentDocumentLink cdl = [select ContentDocumentId, ContentDocument.LatestPublishedVersionId from contentdocumentlink where LinkedEntityId = :cand.id];
+                system.debug('cdl: ' + cdl);
+			ContentVersion cv = [select id from contentversion where contentdocumentid = :cdl.ContentDocumentId];
+			ContentDistribution cd = new ContentDistribution();
+			cd.Name = 'Test';
+			cd.ContentVersionId = cv.id;
+			cd.PreferencesAllowViewInBrowser= true;
+			cd.PreferencesLinkLatestVersion=true;
+			cd.PreferencesNotifyOnVisit=false;
+			cd.PreferencesPasswordRequired=false;
+			cd.PreferencesAllowOriginalDownload= true;
+			insert cd;
+			ContentDistribution cdList = [select ID,DistributionPublicUrl,ContentDownloadURL from ContentDistribution where ContentDocumentId=:cdl.ContentDocumentId];
+			//ContentDistributionView cdv = [select ID from ContentDistributionView where DistributionId=:cd.Id];
+            //cand.PhotoURL__c = cdList.ContentDownloadURL;
+            cand.PhotoURL__c = cv.id;
+            update cand;                
+            }
+        }
+    }
+    
+    public void setJobAppSet(){
+
+        List<Job_Application__c> insertJobApp = new List<Job_Application__c>();
+        List<String> lstString = NewJobAppSet.split(',');
+        
+        if([select Name, id from Candidate__c where Email__c = :candidateMail limit 1].size() > 0){
+            Candidate__c cand = [select Name, id from Candidate__c where Email__c = :candidateMail limit 1];
+            
+            for(String st: lstString) {
+                String AppName = cand.Name + '_' + st;
+                Job_Application__c newJA = new Job_Application__c(Job_Advertisement__c = st, Candidate__c = cand.id, Name = AppName);
+                insertJobApp.add(newJA); 
+            }
+            try {
+                insert insertJobApp;
+            } catch(DmlException e) {
+            }
+            List<Job_Application__c> checkJobApp = [select Job_Advertisement__r.id, Name from Job_Application__c where (Job_Advertisement__r.id IN :lstString) AND (Candidate__r.id =:cand.id)];
+            if(checkJobApp.size() == lstString.size()) {
+                Insertion = 'You have applied all vacancies';
+                String mailbody = 'You have applied following vacancies: ';
+                for(Job_Application__c ja: checkJobApp){
+                    mailbody = mailbody + ja.Name + ' with ID: ' + ja.Job_Advertisement__r.id + ', ';
+                }            
+                mailbody = mailbody.removeEnd(', ');
+                String letterSubject = 'Your applied vacancies';
+                EmailManager.sendMail(candidateMail, letterSubject, mailbody);
+            } else {
+                Insertion = 'You have not applied vacancies: ';
+                for(Job_Application__c ja: checkJobApp){
+                    if (!lstString.contains(ja.Job_Advertisement__r.id)){
+                        Insertion = Insertion + ja.Job_Advertisement__r.id + ', ';
+                    }
+                }
+                Insertion = Insertion.removeEnd(', ');
+            }
+        }             
+        
+
+    }
+        
+    public void CandidatePhotoReturn(){
+        if([select Name, id from Candidate__c where Email__c = :candidateMail limit 1].size() > 0){
+        Candidate__c cand = [select Name, id from Candidate__c where Email__c = :candidateMail limit 1];
+        CandidateId = cand.id;   
+            if([select Id, ContentDocument.Id, FirstPublishLocationId from ContentVersion where FirstPublishLocationId=:CandidateId].size() > 0){
+        CVPhoto = [select Id, ContentDocument.Id, ContentLocation, PathOnClient, VersionData, Title, FirstPublishLocationId from ContentVersion where FirstPublishLocationId=:CandidateId];
+        PhotoCV = true;                 
+            }
+        }
+    }
+
+}

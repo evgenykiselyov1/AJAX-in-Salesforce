@@ -1,0 +1,256 @@
+public class saveExtention {
+    
+    public List<String> fields {get;set;}
+    public String type {get;set;}
+    public List<Schema.SObjectField> ssof {get;set;}
+    public List<FieldsMap> sObjectFields {get;set;}
+    public List<ObjectWFields> sObjectWithFields {get;set;}
+    public string selected {get;set;}
+    public List<String> allObjects {get;set;}
+    public string selectedType {get;set;}
+    public string sObjectID {get;set;}
+    public Map<string, string> fieldMap {get;set;}
+    public String newFields {get;set;}
+    public String newFieldsNames {get;set;}
+    public Account account {get;set;} // new account to create
+    public List<sObjectWrapper> results{get;set;} // search results
+    public string searchString{get;set;} // search keyword
+    public boolean renderResults {get;set;} 
+    public sObject obj;
+    
+    public String reqAccNumber{get;set;}
+    public Account accObj{get;set;}    
+    
+    public saveExtention() {
+        accObj = new Account();
+        selectedType = '';
+        allObjects = new List<string>();
+        List<schema.sObjectType> Objects = Schema.getGlobalDescribe().Values();
+        for(schema.sObjectType sot: Objects){
+            if(sot.getDescribe().fields.getMap().keySet().contains('Name'.toLowerCase())){
+                String s = String.valueOf(sot);
+                allObjects.add(s);                
+            }
+        }
+        /*     
+fields = new List<string>();
+sObjectFields = new List<FieldsMap>();
+type = stdController.getRecord().getSObjectType().getDescribe().getName();
+//type=...
+SObjectType accountType = Schema.getGlobalDescribe().get(type);
+
+Map<String,Schema.SObjectField> mfields = accountType.getDescribe().fields.getMap();
+
+ssof = Schema.getGlobalDescribe().get(type).getDescribe().fields.getMap().values();
+
+for(Schema.SObjectField sso: mfields.values()){
+fields.add('' + sso);
+Map<string, List<String>> pickLists = new Map<string, List<String>> ();
+if(('' + mfields.get('' + sso).getDescribe().getType()) == 'PICKLIST'){
+List<Schema.PicklistEntry> ple = mfields.get('' + sso).getDescribe().getPicklistValues();
+List<String> pickListValuesList= new List<String>();
+for( Schema.PicklistEntry pickListVal : ple){
+pickListValuesList.add(pickListVal.getLabel());
+} 
+pickLists.put('' + sso.getDescribe().getType(), pickListValuesList);
+
+}
+FieldsMap sObjectField = new FieldsMap('' + sso, '' + mfields.get('' + sso).getDescribe().getType(), pickLists);
+sObjectFields.add(sObjectField);
+// Schema.DescribeFieldResult F = Schema.SObjectType.Account.fields + '.' + sso;
+}
+
+*/
+    }
+    
+    public void SelectType(){
+        system.debug('type: ' + selectedType);
+        fields = new List<string>();
+        sObjectFields = new List<FieldsMap>();
+        type = selectedType; //stdController.getRecord().getSObjectType().getDescribe().getName();
+        system.debug('type: ' + type);
+        //type=...
+        //SObjectType accountType = Schema.getGlobalDescribe().get(type);
+        Map<String,Schema.SObjectField> mfields = Schema.getGlobalDescribe().get(type).getDescribe().fields.getMap();
+        system.debug('mfields: ' + mfields);
+        //ssof = Schema.getGlobalDescribe().get(type).getDescribe().fields.getMap().values();  .get(fieldName).getDescribe().isUpdateable()
+        for(Schema.SObjectField sso: mfields.values()){
+            if(sso.getDescribe().isUpdateable()){
+                fields.add('' + sso);
+                Map<string, List<String>> pickLists = new Map<string, List<String>> ();
+                if(('' + mfields.get('' + sso).getDescribe().getType()) == 'PICKLIST'){
+                    List<Schema.PicklistEntry> ple = mfields.get('' + sso).getDescribe().getPicklistValues();
+                    List<String> pickListValuesList= new List<String>();
+                    for( Schema.PicklistEntry pickListVal : ple){
+                        pickListValuesList.add(pickListVal.getLabel());
+                    } 
+                    pickLists.put('' + sso.getDescribe().getType(), pickListValuesList);
+                    
+                }
+                
+                FieldsMap sObjectField = new FieldsMap('' + sso, '' + mfields.get('' + sso).getDescribe().getType(), pickLists);
+                sObjectFields.add(sObjectField);
+                // Schema.DescribeFieldResult F = Schema.SObjectType.Account.fields + '.' + sso;
+            }
+        }
+    }
+    
+    public void getObjectWithFields(){
+        String soql = 'select ' ;
+        List<FieldsMap> sObjFields = sObjectFields;
+        for(FieldsMap fm: sObjFields){
+            soql = soql + fm.fieldName + ', ';
+        }
+        soql = soql.removeEnd(', ');
+        //string query;
+        string query = soql + ' from ' + selectedType + ' where id = \'' +  sObjectID + '\'';
+        //return soql;
+        obj = database.query(query);
+        sObjectWithFields = new List<ObjectWFields>();
+        
+        for(FieldsMap fm: sObjFields){
+            ObjectWFields singleField = new ObjectWFields(fm.fieldName, fm.fieldType, fm.pickLists, '' + obj.get('' + fm.fieldName));
+            sObjectWithFields.add(singleField);
+        }
+    }
+    
+    public PageReference search() {
+        system.debug('search');
+        runSearch();
+        return null;
+    }
+    
+    // prepare the query and issue the search command
+    public void runSearch() {
+        // TODO prepare query string for complex serarches & prevent injections
+        results = performSearch(searchString); 
+        // if(results.size() > 0) {renderResults = true;} else {renderResults = false;}
+    } 
+    
+    // run the search and return the records found. 
+    public List<sObjectWrapper> performSearch(string searchString) {
+        String soql;
+        if(searchString != '' && searchString != null){
+            soql = 'select id, name from ' + selectedType;
+            soql = soql +  ' where name LIKE \'%' + searchString +'%\'';
+            soql = soql + ' limit 25';
+            list<sObject> res = database.query(soql);
+            list<sObjectWrapper> sObjWrapList = new list<sObjectWrapper>();
+            for(sObject so: res){
+                sObjectWrapper sobjWrap = new sObjectWrapper();
+                sObjWrap.id = so.get('Id')+'';
+                sObjWrap.name = so.get('name')+'';
+                sObjWrapList.add(sObjWrap);
+            }
+            return sObjWrapList; //database.query(soql);        
+        }else{ return new List<sObjectWrapper>();}
+    }    
+    
+    public void getObjectToSave(){
+        List<String> names = newFieldsNames.split(',');
+        List<String> fields = newFields.split(',');
+        Map<Id, Map<string, string>> idsToUpdate = new Map<Id, Map<string, string>>();
+        Map<string, string> mp = new Map<string, string>();
+        integer i = 0;
+        for(string name: names){
+            mp.put(name, fields[i]); 
+            i++;
+        }
+        idsToUpdate.put(sObjectID, mp);
+        // Put the Id's and associated name values in the map
+        List<SObject> sObjectsToUpdate = new List<SObject>();
+        for (Id idToUpdate : idsToUpdate.keySet()) {
+            SObject o1 = idToUpdate.getSObjectType().newSObject(idToUpdate);
+            // Set the Name field dynamically
+            for(string key: idsToUpdate.get(idToUpdate).keySet()){
+                Schema.DisplayType f = Schema.getGlobalDescribe().get(selectedType).getDescribe().fields.getMap().get(key).getDescribe().getType(); // or getSOAPType()
+                if(f == Schema.DisplayType.DOUBLE || f == Schema.DisplayType.CURRENCY){
+                    o1.put(key, Decimal.valueof(idsToUpdate.get(idToUpdate).get(key)));
+                } else if(f == Schema.DisplayType.BOOLEAN){
+                    o1.put(key, Boolean.valueOf(idsToUpdate.get(idToUpdate).get(key))); //Boolean.valueOf(tester)
+                }else{
+                    o1.put(key, idsToUpdate.get(idToUpdate).get(key));
+                }
+            }
+            sObjectsToUpdate.add(o1);
+        } 
+        update sObjectsToUpdate;
+    }
+    
+    
+    public class FieldsMap {
+        public string fieldName {get;set;}
+        public string fieldType {get;set;}
+        public Map<string, List<String>> pickLists {get;set;}
+        
+        FieldsMap(String name, String type, Map<string, List<String>> pickLists){
+            this.fieldName = name;
+            this.fieldType = type;
+            this.pickLists = pickLists;
+        }
+    }
+    
+    public class ObjectWFields {
+        public string fieldName {get;set;}
+        public string fieldType {get;set;}
+        public Map<string, List<String>> pickLists {get;set;}
+        public string fieldValue {get;set;}
+        
+        ObjectWFields(String name, String type, Map<string, List<String>> pickLists, string value){
+            this.fieldName = name;
+            this.fieldType = type;
+            this.pickLists = pickLists;
+            this.fieldValue = value;
+        }        
+    }
+    
+    public class sObjectWrapper{
+        public string Name {get;set;}
+        public string Id {get;set;}
+    }
+    
+    public void fillRecord(){
+        if(reqAccNumber !=null && reqAccNumber !=''){
+            List<Account> accLst = new List<Account>();
+            accLst = [select id,Name,AccountNumber,Type,AnnualRevenue from Account where AccountNumber =:reqAccNumber];
+            if(accLst !=null && accLst.size()>0){
+                accObj = accLst[0];
+            }
+            else{
+                ApexPages.Message myMsg = new ApexPages.Message(ApexPages.Severity.Info,' No Records found with this Account Number:'+reqAccNumber);
+                ApexPages.addMessage(myMsg);
+                accObj = null;
+            }
+        }
+    }
+    
+    Integer count = 0;
+    public PageReference incrementCounter() {
+        count++;
+        return null;
+    }
+    
+    public Integer getCount() {
+        return count;
+    }   
+    
+    Integer count1 = 0;
+    final Long start = Datetime.now().getTime();
+    public Boolean getIsEnabled() { return Datetime.now().getTime() - start < 60 * 1000; }
+    
+    public PageReference startIncrementCounter1() {
+        count1 = 0;
+        incrementCounter1();
+        return null;
+    }    
+    
+    public PageReference incrementCounter1() {
+        count1++;
+        return null;
+    }
+    
+    public Integer getCount1() {
+        return count1;
+    }    
+    
+}
