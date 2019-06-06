@@ -1,0 +1,1524 @@
+<apex:page standardStylesheets="false" showHeader="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+    <!--<apex:includeScript value="/soap/ajax/36.0/connection.js"/>
+<apex:includeScript value="/soap/ajax/36.0/apex.js"/>-->
+    <apex:includeScript value="https://code.jquery.com/jquery-2.1.0.min.js"/>
+    
+    <html>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <header>
+            <script src="../../soap/ajax/45.0/connection.js" type="text/javascript"></script>
+            <script src="/soap/ajax/45.0/apex.js" type="text/javascript"></script>
+            <style>
+                .content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease-out;
+                background: -moz-linear-gradient(Gainsboro, Grey, Gainsboro);
+                background: -webkit-gradient(linear, 0 0, 0 100%, from(Gainsboro), to(Gainsboro), color-stop(0.9, Gainsboro));
+                border: none;
+                z-index: 1;
+                }  
+                .shortCut{
+                height:100px; 
+                width:80%; 
+                position:relative; 
+                left:3%;
+                }
+                .contentHolder{
+    width: 100%;
+    position: relative;
+    left: 3%;
+                }
+                .selectButton{
+    position: sticky;
+    top: 10px;
+    background-color: LightSkyBlue;
+    z-index: 10;
+    text-align: center;
+                }
+                .selectButton:hover{
+                cursor: pointer;
+                }
+                .turn {
+                -moz-transform: rotate(270deg); /* Для Firefox */
+                -ms-transform: rotate(270deg); /* Для IE */
+                -webkit-transform: rotate(270deg); /* Для Safari, Chrome, iOS */
+                -o-transform: rotate(270deg); /* Для Opera */
+                transform: rotate(270deg);
+                }
+                .sel { 
+                position:relative;
+                margin: 3px;
+                padding: 0;
+                width: 220px; height: auto; /* Размеры */
+                background: white; /* Цвет фона */
+                text-align: center;
+                line-height: 30px;
+                border: 1px solid;              
+                border-radius: 5px;
+                border-color: rgba(0, 0, 0, 0.1); 
+                box-shadow: 0px 0px 4px 0px rgba(50, 50, 50, 0.1);                
+                }        
+                .sel:hover{box-shadow: 0px 0px 15px 0px rgba(0, 0, 255, 0.4);}
+                .counter {
+                position:relative;
+                margin: 0;
+                padding: 0;
+                width: 30px; height: 30px; /* Размеры */
+                background: orange; /* Цвет фона */
+                border-radius: 15px; /* Радиус скругления */
+                display: inline-block;
+                text-align: center;
+                line-height: 30px;
+                }        
+                .selectBtn{
+                position:relative;
+                top:50%;
+                cursor: pointer;
+                -moz-transform: rotate(270deg); /* Для Firefox */
+                -ms-transform: rotate(270deg); /* Для IE */
+                -webkit-transform: rotate(270deg); /* Для Safari, Chrome, iOS */
+                -o-transform: rotate(270deg); /* Для Opera */
+                transform: rotate(270deg); 
+                }
+                .deselectBtn{
+                position:relative;
+                top:60%;
+                cursor: pointer;  
+                -moz-transform: rotate(270deg); /* Для Firefox */
+                -ms-transform: rotate(270deg); /* Для IE */
+                -webkit-transform: rotate(270deg); /* Для Safari, Chrome, iOS */
+                -o-transform: rotate(270deg); /* Для Opera */
+                transform: rotate(270deg);      
+                }
+                .apply {
+                position:relative;
+                margin: 10px;
+                padding: 0;
+                width: 100px; height: 35px; /* Размеры */
+                background: orange; /* Цвет фона */
+                border: 3px solid #fff; /* Белая рамка */
+                border-radius: 10px; /* Радиус скругления */
+                display: inline-block;
+                border: 2px solid transparent; /* Невидимая рамка */
+                cursor: pointer; /*Указатель "рука" при наведении курсора*/
+                text-align: center;
+                line-height: 30px;
+                }
+                .apply:hover {
+                border: 2px solid black; /* Чёрная рамка */
+                }
+                
+                /* The Modal (background) */
+                .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 5; /* Sit on top */
+                padding-top: 100px; /* Location of the box */
+                left: 0;
+                top: 0;
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgb(0,0,0); /* Fallback color */
+                background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+                }
+                
+                /* Modal Content */
+                .modal-content {
+                background-color: #fefefe;
+                margin: auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 30%;
+                }
+                
+                /* The Close Button */
+                .close {
+                color: #aaaaaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                }
+                
+                .close:hover,
+                .close:focus {
+                color: #000;
+                text-decoration: none;
+                cursor: pointer;
+                }           
+                
+                .sendApp{
+                margin: 10px auto; 
+                width: 150px; 
+                padding: 10px;
+                height: 5px; /* Размеры */
+                background: orange; /* Цвет фона */
+                border: 3px solid #fff; /* Белая рамка */
+                border-radius: 10px; /* Радиус скругления */
+                border: 2px solid transparent; /* Невидимая рамка */
+                cursor: pointer; /*Указатель "рука" при наведении курсора*/
+                text-align: center;
+                line-height: 5px;                
+                
+                }
+                .sendApp:hover {
+                border: 2px solid black; /* Чёрная рамка */
+                }       
+                
+                /*   Styles for image    */
+                .inputfile {
+                position: absolute;
+                z-index: -1;
+                }
+                
+                .inputfile + label {
+                font-size: 1.1em;
+                font-weight: 100;
+                color: black;
+                background-color: none;
+                display: inline-block;
+                }
+                
+                .inputfile:focus + label,
+                .inputfile + label:hover {
+                background-color: Silver;
+                }
+                
+                .img { 
+                width: 100%;
+                }
+                
+                .img::before { 
+                content: " ";
+                display: none;
+                }
+                
+                .img::after { 
+                display: block;
+                position: relative;
+                top: 5px;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                }               
+                
+                .modalTableInputCell {
+                height: 100%;
+                margin: 0;
+                border: 1px solid;
+                border-radius: 5px;
+                border-color: rgba(0, 0, 0, 0.1); 
+                box-shadow: 0px 0px 4px 0px rgba(50, 50, 50, 0.1);
+                text-align: center;
+                width:100%;
+                }
+                .inputFormTable {
+                border: 1px solid;              
+                border-radius: 5px;
+                border-color: rgba(0, 0, 0, 0.1); 
+                box-shadow: 0px 0px 4px 0px rgba(50, 50, 50, 0.1);
+                
+                }
+                .inputFormTable:hover{box-shadow: 0px 0px 15px 0px rgba(0, 0, 255, 0.4);}    
+                
+
+                /*New styles for responsive page*/
+                
+.vacancyDiv{
+position:static;
+width:99%;
+height: auto;
+border: 1px solid;
+border-radius: 5px;
+border-color: rgba(0, 0, 0, 0.1);
+box-shadow: 0px 0px 4px 0px rgba(50, 50, 50, 0.1);
+margin-right: 1px;
+margin-left: 1px;
+margin-top: 2px;
+margin-bottom: 2px;
+}
+.vacancyDiv:hover{box-shadow: 0px 0px 15px 0px rgba(0, 0, 255, 0.4);}
+
+.collapsible {
+position: relative; 
+float:right;
+margin-right: 5%;
+margin-top: 3%;
+background-size: auto;
+background: white;
+cursor: pointer;
+padding-right: 1%;
+padding-top: 1.5%;
+width: 32px;
+height: 32px;
+border: none;
+text-align: center;
+font-size: 20px;
+z-index: 0;
+border: none;
+background: url(https://brave-raccoon-182884-dev-ed--absi-dev.eu10.visual.force.com/resource/1557069154000/absi_dev__ArrowDown?);
+background-repeat: no-repeat;
+background-size: 32px 32px;
+			}
+                
+.collapsible:hover{
+cursor: pointer;                
+                }                
+               
+.active {
+background: url(https://brave-raccoon-182884-dev-ed--absi-dev.eu10.visual.force.com/resource/1557069124000/absi_dev__ArrowUp?);
+background-repeat: no-repeat;
+background-size: 32px 32px;
+border: none;
+        }	
+.active:hover{
+cursor: pointer;                
+                }                
+
+.selectedVacancyDiv{
+position:static;
+width:99%;
+height:50px; 
+border: 1px solid;
+border-radius: 5px;
+border-color: rgba(0, 0, 0, 0.1);
+box-shadow: 0px 0px 4px 0px rgba(50, 50, 50, 0.1);
+margin-right: 1px;
+margin-left: 1px;
+margin-top: 2px;
+margin-bottom: 2px;
+}
+.selectedVacancyDiv:hover{box-shadow: 0px 0px 15px 0px rgba(0, 0, 255, 0.4);}
+
+#MainHolderDiv{
+position:relative;
+float:left;
+display:block;
+width:40%;
+height:90vh;
+left:30%;
+}
+#SelectedHolder{
+position:relative;
+float:right;
+display:block;
+//border: 1px solid black;
+width:25%;
+height:90vh;
+margin-left:5%;
+}		
+form {
+width: 100%;
+//box-shadow: 0px 0px 15px 0px rgba(0, 0, 255, 0.4);
+}
+
+form input {
+border: 1px solid;
+border-radius: 2px;
+border-color: rgba(0, 0, 0, 0.1);
+float:left;
+height:2.2em;
+padding-left: 5px;
+-moz-box-sizing: border-box; /* в Firefox нужен префикс */
+box-sizing: border-box;
+width: 20%;
+font-size: 14px;
+}
+
+form select {
+border: 1px solid;
+border-radius: 2px;
+border-color: rgba(0, 0, 0, 0.1);
+float:left;
+height:2.2em;
+padding-left: 5px;
+-moz-box-sizing: border-box; /* в Firefox нужен префикс */
+box-sizing: border-box;
+width: 20%;
+font-size: 14px;
+}
+
+//form input, form select:hover{box-shadow: 0px 0px 15px 0px rgba(0, 0, 255, 0.4);}
+
+form button {
+border: 1px solid;
+border-radius: 2px;
+border-color: rgba(0, 0, 0, 0.1);
+background-color: white;
+color: blue;
+float:left;
+height:2.2em;
+padding:  0 0;
+-moz-box-sizing: border-box; /* в Firefox нужен префикс */
+box-sizing: border-box;
+width: 20%;
+font-size: 14px;
+}
+form button:hover{
+background-color: Gainsboro;
+color:DimGrey ;
+cursor: pointer;                
+}
+
+.otherButtons{
+border: 1px solid;
+border-radius: 2px;
+border-color: rgba(0, 0, 0, 0.2);
+background-color: white;
+color: blue;
+height:100%;
+padding: 0 2px;
+text-align: center;
+font-size: 14px;
+                //float:left;
+}
+.otherButtons:hover{
+background-color: Gainsboro;
+color:DimGrey ;
+}
+
+.PaginationButton{
+border: 1px solid;
+border-radius: 2px;
+border-color: rgba(0, 0, 0, 0.2);
+background-color: white;
+color: blue;
+height:2em;
+padding: 0 2px;
+text-align: center;
+font-size: 16px;
+float:left;
+min-width: 15%;
+}
+
+.PaginationButton:hover{
+background-color: Gainsboro;
+color:DimGrey;
+cursor: pointer;                        
+}
+
+#Records_on_page{
+font-size:1vw;
+position:relative;
+display:inline-block; 
+left:1%;
+                float:right;
+//border: 1px solid brown;
+                //width:auto; 
+                width:30%;
+height:1.8em;
+}
+select {
+display:inline-block; 
+left:0;
+//width:3em;
+width:25%;
+min-width:2.75em;
+max -width:2.75em;
+height:100%;
+font-size: 14px;
+}
+
+@media 
+only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px)  {
+#MainHolderDiv{
+position:relative;
+display:block;
+border-bottom-color: coral; 
+width:100%;
+height:90vh;
+left:0;
+overflow-y:auto;
+box-sizing: border-box;
+}
+#SelectedHolder{
+position:relative;
+display:block;
+//border: 1px solid black; 
+width:100%;
+height:90vh;
+left:0;
+box-sizing: border-box;
+}
+.PaginationButton{
+height:2em;
+width:25%;
+}
+#Records_on_page{
+font-size:14px;
+height:2em;
+width:100%;
+left:0;
+}
+select {
+height:2em;
+}
+
+/* Force form to not be like tables anymore */
+form input, form select, form option {
+//border: 2px solid green;
+height:2em;
+width:100%;
+padding-left: 5px;
+}	
+form button {
+width:50%;
+}
+                
+.modal-content {
+                background-color: white;//#fefefe;
+                margin-left: 0;
+                padding: 0;
+border: 1px solid #888;
+width: 100%;
+}                
+                
+}	 
+                
+#selectedJobs{
+overflow-y:scroll; 
+height:calc(90vh - 2.2em); 
+position:relative;
+top:0; 
+left:0; 
+width:100%; 
+border:none;                
+                }      
+                #myBtn{
+padding-right:3%;
+padding-left:3%;
+margin-left:2em;                
+                }
+#counter{
+position:relative;
+display:inline-block;
+margin-left:15%;
+border:1px solid;
+border-color:rgba(0, 0, 0, 0.3);
+width:2em;
+height:100%;
+background-color:white;
+border-radius:1em;
+text-align:center;
+line-height:2;
+                }                
+                #selectedPanelDiv{
+                position:sticky;
+                top :0;
+                left:0;
+                border:none;
+                width:100%;
+                height:2em;
+                z-index:4;
+                background-color:white;                
+                }
+                #container{
+                position:sticky;
+                top:0;
+                left:0;
+                width:99.6%;
+                height:calc(90vh - 4em);
+                z-index:1;
+                overflow-y:scroll;                
+                }
+            </style>
+        </header>
+
+        <body> 
+            <head>
+            </head>
+        </body>
+
+    </html>
+    
+    <script>
+    
+    function setStyleAttributes(el, attrs) {
+        for(var key in attrs) {
+            el.style[key] = attrs[key];
+        }
+    } 
+    
+    var elt;
+    
+    window.onload = function myFunction() {
+        sforce.connection.serverUrl = '{!$Site.Prefix}/services/Soap/u/45.0';
+        
+        try{ 
+            result = sforce.connection.login("evgenykiselyov1@brave-raccoon-182884.com", "starlight11AbSpgkETJ9sUzYuOSLzHmUWV"); 
+            console.log("logged in with session id " + result.sessionId); 
+        }catch(error) { 
+            if (error.faultcode.indexOf("INVALID_LOGIN") != -1) { 
+                console.log("check your username and passwd, invalid login"); 
+            } else { console.log(error); 
+                   } 
+        } 
+        
+        sforce.connection.sessionId=result.sessionId;
+        console.log("{!$Api.Session_ID}");
+        console.log(sforce.connection.sessionId);
+        console.log(sforce.connection.getUserInfo());
+        var stamp = sforce.connection.getServerTimestamp(); 
+        console.log(stamp.timestamp);
+        
+        var user = sforce.connection.getUserInfo(); 
+        console.log("userType " + user.userType);
+        console.log("Hello " + user.userName); 
+        console.log("Your email id is " + user.userEmail); 
+        console.log("and you work for " + user.organizationName)
+        
+        var request_url = '{!$Site.Prefix}/services/oauth2/token'; //'https://test.salesforce.com/services/oauth2/token';
+        
+        var sessionId= sforce.connection.sessionId;  
+        
+        sforce.connection.batchSize = 200;       
+        
+        createviewState();
+        //1. create options for select
+        var x = document.getElementById("mySelect"); 
+        var option = document.createElement("option");
+        option.text = "Salary range"; 
+        option.value = ""; 
+        x.add(option);    
+        console.log('here');
+        
+        var result = sforce.connection.describeSObject("absi_dev__Job_Advertisement__c");
+        for (var i = 0; i < result.fields.length; i++) {
+            if (result.fields[i].name === 'absi_dev__Salary__c') {
+                var field = result.fields[i];
+                for (var j = 0; j < field.picklistValues.length; j++) {
+                    var option = document.createElement("option");
+                    option.text = field.picklistValues[j].value;
+                    x.add(option);
+                }
+            }
+        }
+        
+        //1.1. create options for page size select 
+        var pgSizeOptions = ["5", "10", "20", "50"]; // need to be retrieved from server side instead of hardcoded values
+        var y = document.getElementById("sizeSelect");
+        for(i = 0; i < pgSizeOptions.length; i++){
+            var pg_option = document.createElement("option");
+            pg_option.text = pgSizeOptions[i];
+            y.add(pg_option);
+        }
+        
+        //2. create vacancy holder tabs
+        //this is a test vacancies array//Maps need to be retrieved from server as a Map
+        //vacancies1 = new Array(); //Mock output for getStartVacansyList function with AJAX request
+        //vacancies = new Array();    
+        query = "Select Id, Name, absi_dev__Status__c, absi_dev__Salary__c From absi_dev__Job_Advertisement__c order by Name";
+        getStartVacansyList(query);
+        page = 1;
+        size = document.getElementById("sizeSelect").value;
+    };
+    
+    function nextPage(){
+        page = page + 1;
+        scrolling(page, size);
+    }
+    
+    function previousPage(){
+        page = page - 1;
+        scrolling(page, size);
+    }
+    
+    function lastPage(){
+        page = Math.ceil(totalSize/size); //Math.ceil(vacancies.length/size);
+        currentIndex = indexes[indexes.length - 1];
+        scrolling(page, size);
+    }
+    
+    function firstPage(){
+        page = 1;
+        scrolling(page, size);
+    }   
+    
+    var queryMore; //variable for checking if there are more records to get    
+    function getStartVacansyList(query){
+        //function contains all code to execute after page is rendered
+        var state = { //state that you need when the callback is called
+            //output : vacancies1,
+            //startTime : new Date().getTime()
+        };
+        
+        var callback = {
+            //call layoutResult if the request is successful
+            onSuccess: layoutResults,
+            //call queryFailed if the api request fails
+            onFailure: queryFailed,
+            source: state
+        };
+        console.log('here1');
+        sforce.connection.query(query, callback);
+    }    //getCurrentVacansyList function last braket
+    
+    function getNextVacansyList(newLocator){
+        //function contains all code to execute after page is rendered
+        var state = { //state that you need when the callback is called
+            //output : vacancies1,
+            //startTime : new Date().getTime(),
+            previousIndex : newLocator.substring(19,newLocator.length)
+        };
+        
+        var callback = {
+            //call layoutResult if the request is successful
+            onSuccess: layoutResultsForNext,
+            //call queryFailed if the api request fails
+            onFailure: queryFailed,
+            source: state
+        };
+        sforce.connection.queryMore(newLocator, callback);
+    }    //getCurrentVacansyList function last braket
+    
+    function layoutResultsForNext(queryResult, source) {
+        if (queryResult.size > 0) {
+            var output = "";
+            //get the records array
+            var records = queryResult.getArray('records');
+            //loop through the records and construct html string
+            vacancies = [];
+            for (var i = 0; i < records.length; i++) {
+                let parameters = new Map([
+                    ['Vacancy Name',  records[i].get('Name')], 
+                    ['Salary Range',  records[i].get('absi_dev__Salary__c')], 
+                    ['Vacancy Status', records[i].get('absi_dev__Status__c')], 
+                    ['Vacancy ID',  records[i].get('Id')]
+                ]);
+                vacancies.push(parameters);                        
+            }
+            
+            if(queryResult.queryLocator !== null){
+                currentIndex = queryResult.queryLocator;
+                currentIndex = currentIndex.substring(19,currentIndex.length);
+            }else{
+                currentIndex = totalSize;
+            }
+            previousIndex = source.previousIndex;
+            vacanciesListLoading(page, size);
+        }
+    }       
+    
+    function queryFailed(error, source) {
+        //source.output.innerHTML = "An error has occurred: " + error;
+        console.log("An error has occurred: " + error);
+        //sforce.debug.log(source.output.innerHTML);
+    }
+    
+    function layoutResults(queryResult, source) {
+        console.log('here2');
+        vacancies = [];
+        if (queryResult.size > 0) {
+            var output = "";
+            //get the records array
+            var records = queryResult.getArray('records');
+            //loop through the records and construct html string
+            for (var i = 0; i < records.length; i++) {
+                let parameters = new Map([
+                    ['Vacancy Name',  records[i].get('Name')], 
+                    ['Salary Range',  records[i].get('absi_dev__Salary__c')], 
+                    ['Vacancy Status', records[i].get('absi_dev__Status__c')], 
+                    ['Vacancy ID',  records[i].get('Id')]
+                ]);
+                vacancies.push(parameters);                        
+            }
+            //render the generated html string
+            //source.output.innerHTML = output;
+            
+            if(queryResult.queryLocator != null){
+                console.log(queryResult.queryLocator);
+                locator = queryResult.queryLocator;
+                locator = locator.substr(0,18);
+            }
+            
+            queryMore = true;
+            indexes = new Array();
+            while (queryMore) {
+                if (queryResult.getBoolean("done")) {
+                    queryMore = false;
+                    totalSize = queryResult.size;
+                    console.log('queryResult.size = ' + queryResult.size);
+                } else {
+                    newLocator = queryResult.queryLocator;//.substr(0,18);;
+                    queryResult = sforce.connection.queryMore(queryResult.queryLocator);
+                    var index = newLocator.substring(19,newLocator.length);
+                    indexes.push(index);
+                }
+            }
+            currentIndex = 200;
+            previousIndex = 0;
+            vacanciesListLoading(page, size);
+        }else if(queryResult.size == 0){
+            currentIndex = 200;
+            previousIndex = 0;
+            totalSize = 0;
+            vacanciesListLoading(page, size);
+        }
+    }   
+    
+    function scrolling(page, size){
+        var listStart = (page-1)*size;
+        var page_locator = page*size;
+        
+        if(page_locator >  currentIndex){
+            var nextLocator = locator + '-' + currentIndex;
+            getNextVacansyList(nextLocator);
+        }else if(listStart < previousIndex){
+            if(listStart > 0){
+                if(indexes.indexOf(previousIndex) > 0){                    
+                    var nextLocator = locator + '-' + indexes[indexes.indexOf(previousIndex) - 1];
+                    getNextVacansyList(nextLocator);
+                }else if(indexes.indexOf(previousIndex) == 0){
+                    getStartVacansyList(query);
+                }
+                
+            }else if(listStart == 0){
+                getStartVacansyList(query);
+            }
+        }else if(listStart == 0){
+            getStartVacansyList(query);
+        }else{
+            vacanciesListLoading(page, size);
+        }
+    }
+    
+    //function that displaies vacancies list of current page 
+    function vacanciesListLoading(page, size){
+        var holderDiv = new Array();
+        var shortCutDiv = new Array();//divs for vacancy brief description
+        var contentDiv = new Array();//divs for vacancy detail description
+        var xt = document.getElementById("container");
+        
+        while (xt.firstChild) {
+            xt.removeChild(xt.firstChild);
+        }
+        
+        var listSize = page*size;
+        var listStart = (page-1)*size;
+        var page_locator = page*size;
+        
+        if(page_locator >= totalSize /*vacancies.length*/){
+            listSize = totalSize;
+        }
+        
+        if(page_locator >= totalSize){
+            document.getElementById("next").disabled = true;
+            document.getElementById("next").style.backgroundColor = 'Gainsboro';
+            document.getElementById("next").style.color = 'DimGrey';
+            document.getElementById("last").disabled = true;
+            document.getElementById("last").style.backgroundColor = 'Gainsboro';
+            document.getElementById("last").style.color = 'DimGrey';
+        }else{
+            document.getElementById("next").disabled = false;
+            document.getElementById("next").style.backgroundColor = 'DodgerBlue';
+            document.getElementById("next").style.color = 'white';
+            document.getElementById("last").disabled = false;
+            document.getElementById("last").style.backgroundColor = 'DodgerBlue';
+            document.getElementById("last").style.color = 'white';
+        }
+        
+        if((page - 1) <= 0 ){
+            document.getElementById("previous").disabled = true;
+            document.getElementById("previous").style.backgroundColor = 'Gainsboro';
+            document.getElementById("previous").style.color = 'DimGrey';
+            document.getElementById("first").disabled = true;
+            document.getElementById("first").style.backgroundColor = 'Gainsboro';  
+            document.getElementById("first").style.color = 'DimGrey';
+        }else{
+            document.getElementById("previous").disabled = false;
+            document.getElementById("previous").style.backgroundColor = 'DodgerBlue';
+            document.getElementById("previous").style.color = 'white';
+            document.getElementById("first").disabled = false;
+            document.getElementById("first").style.backgroundColor = 'DodgerBlue';  
+            document.getElementById("first").style.color = 'white';
+        }
+        
+        for(i = listStart; i < listSize; i++){ // '5' is to be adjusted for selecting of tabs quantity
+            
+            holderDiv[i] = document.createElement('div');
+            holderDiv[i].className = "vacancyDiv";                    
+            holderDiv[i].id = vacancies[i - previousIndex].get('Vacancy ID'); //"select" + i;  //Vacancy ID
+            
+            holderDiv[i].onmouseover = function getElementInit() {
+                var str = this.id;
+                element = str;
+            };
+            
+            xt.appendChild(holderDiv[i]);
+            //2.1. create collapse button
+            var button = document.createElement('button');
+            button.className = "collapsible";
+            button.id = 'openContent' + holderDiv[i].id;
+            button.onmouseover = function getElementInit() {
+                var str = this.id;
+                elt = document.getElementById(this.id);
+            };
+            
+            button.onclick = openContent;
+            holderDiv[i].appendChild(button);
+            
+            shortCutDiv[i] = document.createElement('div');
+            shortCutDiv[i].className = "shortCut";
+            holderDiv[i].appendChild(shortCutDiv[i]);
+            var h4Text = document.createElement('h4');
+            
+            h4Text.innerHTML = vacancies[i - previousIndex].get('Vacancy Name');  //Vacancy Name
+            shortCutDiv[i].appendChild(h4Text);
+            var pText = document.createElement('p');
+            pText.innerHTML = 'Salary: ' + vacancies[i - previousIndex].get('Salary Range');
+            shortCutDiv[i].appendChild(pText);  
+            
+            contentDiv[i] = document.createElement('div');
+            contentDiv[i].className = "content";
+            holderDiv[i].appendChild(contentDiv[i]);
+            
+            contentHolderDiv = document.createElement('div');
+            contentHolderDiv.className = "contentHolder";
+            contentHolderDiv.innerHTML = '';
+            contentDiv[i].appendChild(contentHolderDiv);
+            
+            for (var [key, value] of vacancies[i - previousIndex]) {
+                contentHolderDiv.innerHTML = contentHolderDiv.innerHTML + key + ": " +  value + '<br/>';
+            }
+        } //for(i = 0; i < 5; i++){ // '5' is to be adjusted for selecting of tabs quantity
+        afterLoading();
+    }
+    
+    //function that opens detail page of vacancy. I need to make this page scrollable
+    function openContent(){
+        elt.classList.toggle("active");
+        var childcount = elt.parentNode.childElementCount;
+        var content = elt.parentNode.children[2];
+        content.style.height = 'auto';                    
+        if (content.style.maxHeight){
+            content.style.maxHeight = null;
+        } else {
+            content.style.maxHeight = content.scrollHeight + "px";                
+        }                    
+    }
+    
+    // for adding selected jobs to screen
+    var display = true;
+    var vacancy = new Array();
+    var iVac = 0; 
+    var slctd_vac = new Array(); 
+    var element;
+    
+    function afterLoading(){
+        var x = document.getElementsByClassName("vacancyDiv");
+        var button = new Array();
+        for(i = 0; i < x.length; i++){
+            button[i] = document.createElement('div');
+            button[i].className = "selectButton";                    
+            button[i].id = "select" + x[i].id;  
+            button[i].onmouseover = function getElementInit() {
+                var str = this.id;
+                element = str;
+            };
+            button[i].onclick = myFunctionCall;
+            
+            //var btnInnerHtml = document.createElement('p');
+            
+            if(slctd_vac.includes(x[i].id) == false){
+                //btnInnerHtml.className = 'selectBtn';
+                //btnInnerHtml.innerHTML = 'SELECT';
+                button[i].innerHTML = 'SELECT';
+            } else if (slctd_vac.includes(x[i].id) == true){
+                //btnInnerHtml.className = 'deselectBtn';
+                //btnInnerHtml.innerHTML = 'DESELECT';
+                button[i].innerHTML = 'DESELECT';
+            }
+            var xt = document.getElementById(x[i].id);
+            xt.lastElementChild.insertBefore(button[i], xt.lastElementChild.lastElementChild.nextSibling);   
+            //button[i].appendChild(btnInnerHtml);
+        }
+    }
+    
+    function myFunctionCall(){
+        var x = document.getElementById(element);
+        myFunction(x);
+    }
+    
+    function myFunction(elmnt) {
+        var elt = elmnt;//.parentNode.parentNode;
+        var funct_type = document.getElementById(elt.id).lastElementChild.lastElementChild.innerHTML;//document.getElementById(elt.id).lastElementChild.lastElementChild.firstElementChild.innerHTML;
+        if(funct_type == "SELECT"){
+            if(slctd_vac.includes(elt.id) == false){
+                vacancy[iVac] = document.createElement('div');
+                vacancy[iVac].className = "sel";
+                vacancy[iVac].id = "selectedJobs" + elt.id;
+                vacancy[iVac].innerHTML = '<p style="position:relative; float:right; margin-right:2%; margin-top:1%; cursor: pointer; z-index:2; font: 12pt/10pt sans-serif;" onclick="deleting(this);">&times;</p>' + document.getElementById(elt.id).children[1].innerHTML; // document.getElementById(elt.id).firstElementChild.innerHTML;
+                document.getElementById("selectedJobs").appendChild(vacancy[iVac]); 
+                iVac = iVac + 1;
+                slctd_vac.push(elt.id);
+                document.getElementById(elt.id).lastElementChild.lastElementChild.innerHTML = 'DESELECT';//"<p class='turn' style='position:relative;top:60%;cursor: pointer;'>DESELECT</p>";
+            };
+        } else if(funct_type == "DESELECT"){
+            document.getElementById("selectedJobs" + elt.id).remove();
+            var index = slctd_vac.indexOf(elt.id);
+            slctd_vac.splice(index, 1);
+            iVac = iVac - 1;
+            document.getElementById(elt.id).lastElementChild.lastElementChild.innerHTML = 'SELECT';//"<p class='turn' style='position:relative;top:50%;cursor: pointer;'>SELECT</p>";
+        }
+        document.getElementById("counter").innerHTML = iVac;
+    }    
+    
+    function deleting(elmnt){
+        var elt = elmnt.parentNode.id;
+        var thisJob = elmnt.parentNode.id.substr(12);
+        var index = slctd_vac.indexOf(thisJob);
+        slctd_vac.splice(index, 1);
+        iVac = iVac - 1;
+        document.getElementById("counter").innerHTML = iVac;
+        var slctdJobs_index = elt.indexOf("selectedJobs");
+        if(document.getElementById(thisJob) != null) {
+            document.getElementById(thisJob).lastElementChild.lastElementChild.innerHTML = 'SELECT';//"<p class='turn' style='position:relative;top:50%;cursor: pointer;'>SELECT</p>";
+        }
+        document.getElementById(elt).remove();
+    }    
+    
+    // Get the modal
+    //var modal = document.getElementById('myModal');
+    
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+    
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+    
+    // When the user clicks the button, open the modal 
+    
+    function displayModal(){
+        
+        if(document.getElementsByClassName('sel').length > 0){
+            var modal = document.getElementById('myModal');
+            modal.style.display = "block";
+        }else{
+            alert('You nave not choosen any vacansy. Select at least one to open form to send vacancies');
+        }
+    }
+    
+    // When the user clicks on <span> (x), close the modal
+    function closeModal(){
+        var modal = document.getElementById('myModal');
+        modal.style.display = "none";
+    }
+    
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        var modal = document.getElementById('myModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }       
+    
+    //var Blob photoFile;  
+    var FileAsAString = '';
+    var fileName = '';
+    var fileExtension = '';
+    
+    function previewFile() {
+        let file = document.querySelector('input[type=file]').files[0];
+        if(file) {
+            
+            if(file.size > 1048576) {
+                alert(file.size + " in bytes." + ' Big file. More than 1MB. Try another file');       
+            }else if(file.size <= 1048576){
+                photoFile = document.querySelector('input[type=file]').files[0];
+                preview = document.getElementById('img');
+                var Name = file.name;
+                var index = Name.lastIndexOf(".");
+                fileName = Name.substring(0, index);
+                fileExtension = Name.substring(index);
+                reader  = new FileReader();
+                reader1  = new FileReader();
+                var myReader = new FileReader();
+                var myReaderSforce = new FileReader();
+                reader.onload = function(){
+                    //FileAsAString = btoa(reader.result); //this is when I use apex controller to create contentversion
+                    FileAsAString = reader.result; //this is when I use only ajax toolkit to create contentversion
+                };
+                
+                reader.onloadend = function () {
+                    //preview.src = reader.result;
+                }                    
+                reader1.onload = function(){
+                    var output = document.getElementById('img'); //document.querySelector('image');
+                    var dataURL = reader1.result;
+                    output.src = dataURL;
+                };                        
+                reader1.onloadend = function () {
+                    preview.src = reader1.result;
+                }
+                //
+                /*
+                myReaderSforce.onload = function(e) {
+                    var document = new sforce.SObject('Document');  // create document object
+                    document.Name = file.name;
+                    document.Body = new sforce.Base64Binary(e.target.result).toString();
+                    console.log('e.target.result: ' + e.target.result);
+                    console.log('Body: ' + document.Body);
+                    document.FolderId ='a050X00000xQOPEQA4' ;  //Where FolderId is the ID of record to which you want to add your Document.
+                    var result = sforce.connection.create([document]); 
+                    if(result[0].getBoolean("success")){  
+                        var documentId=result[0].id;  // get document object id.
+                        alert('file added successfully'+documentId);
+                    }else{
+                        alert('error occurred');
+                    }
+                };
+                myReaderSforce.readAsBinaryString(file);
+                */
+                //   
+                myReader.onload = function(){
+                    console.log('myReader: ' + myReader.result);  
+                    myBlob = new Blob([myReader.result]);//, {type: "image/"+fileExtension}
+                    console.log('myBlob: ' + myBlob);
+                    myReader.addEventListener("loadend", function(e)
+                                              {
+                                                  var buffer = e.srcElement.result;//arraybuffer object
+                                                  console.log('buffer: ' + buffer);
+                                              });
+                    //FileAsAString = readAsArrayBuffer(reader.result);
+                };                
+                reader.readAsBinaryString(file);
+                reader1.readAsDataURL(file);
+                myReader.readAsArrayBuffer(file);
+            }
+        } else { 
+            alert("select a file..."); 
+        }
+    }       
+    
+    function setAttributes(el, attrs) {
+        for(var key in attrs) {
+            el.setAttribute(key, attrs[key]);
+        }
+    }
+    
+    function createviewState(){
+        modalDiv = document.createElement('div');
+        setAttributes(modalDiv, {"id": "myModal", "class": "modal"});
+        document.body.appendChild(modalDiv);
+        
+        modalContentDiv = document.createElement('div');
+        setAttributes(modalContentDiv, {"id": "Modal", "class": "modal-content"});
+        modalDiv.appendChild(modalContentDiv);
+        
+        modalClose = document.createElement('span');
+        setAttributes(modalClose, {"class": "close", "onclick": "closeModal();"});
+        modalClose.innerHTML = '&times;';  
+        modalContentDiv.appendChild(modalClose);
+        
+        inputFormTable = document.createElement('table');
+        setAttributes(inputFormTable, {"id": "inputForm", "align": "center", "class": "inputFormTable"});
+        modalContentDiv.appendChild(inputFormTable);
+        
+        inputFormTableCaption = document.createElement('caption');
+        inputFormTableCaption.innerHTML = 'Application Data';
+        inputFormTable.appendChild(inputFormTableCaption);
+        
+        inputFormTableTr = new Array();
+        inputFormTableTd1 = new Array();
+        inputFormTableTd2 = new Array();
+        inputFormTableTd3 = new Array();
+        var inners = ["First Name", "Last Name", "Contact Email", "Contact Phone", "Desired Salary", "Photo"];
+        for(var i = 1; i <= 6; i++){
+            inputFormTableTr[i] = document.createElement('tr');
+            inputFormTable.appendChild(inputFormTableTr[i]);
+            inputFormTableTd1[i] = document.createElement('td');
+            inputFormTableTd2[i] = document.createElement('td');
+            inputFormTableTd1[i].setAttribute("class", "inputFormTable");
+            inputFormTableTd1[i].style.width = '30%';
+            inputFormTableTd2[i].setAttribute("class", "inputFormTable");
+            //inputFormTableTd2[i].style.width = 'auto';
+            inputFormTableTd2[i].style.padding = '0';
+            inputFormTableTr[i].appendChild(inputFormTableTd1[i]);
+            inputFormTableTr[i].appendChild(inputFormTableTd2[i]);
+            inputFormTableTd1[i].innerHTML = inners[i-1];
+        }
+        var placeholders = ["First Name", "Last Name", "drone@globex.com", "Contact Phone", "Desired Salary"];
+        var ids = ["FstName", "LastName", "CtcEmail", "CtcPhone", "Des_Sal"];
+        var items = new Array();
+        for(var i = 0; i < placeholders.length; i++){
+            items.push('Input' + i.toString());
+            items[i] = document.createElement('input');
+            setAttributes(items[i], {"type": "text", "value": "", "id": ids[i], "placeholder":placeholders[i], "class":"modalTableInputCell"});
+            inputFormTableTd2[i + 1].appendChild(items[i]);
+        }
+        
+        fileInput = document.createElement('input');
+        setAttributes(fileInput, {"type": "file", "id": "fotofile", "onchange":"previewFile();", "class":"inputfile"});
+        inputFormTableTd2[6].appendChild(fileInput);    
+        
+        fileLabel = document.createElement('label');
+        setAttributes(fileLabel, {"for": "fotofile", "class":"modalTableInputCell"});
+        fileLabel.innerHTML = 'UPLOAD YOUR PHOTO PRESSING HERE';
+        fileLabel.style.position = 'relative';
+        fileLabel.style.bottom = '20%';
+        fileLabel.style.margin = '0';
+        inputFormTableTd2[6].appendChild(fileLabel);
+        
+        fileOutput = document.createElement('img');
+        setAttributes(fileOutput, {"id": "img", "class":"img", "url":""});
+        inputFormTableTd2[6].appendChild(fileOutput);
+        
+        sendFromDiv = document.createElement('div');
+        setAttributes(sendFromDiv, {"id": "sendApp", "class":"sendApp", "onclick":"formProcessing();"});
+        sendFromDiv.innerHTML = 'Send Application';
+        modalContentDiv.appendChild(sendFromDiv);
+        
+        //CREATE ALL EXCEPT MODAL
+        vacanciesWithSearchDiv = document.createElement('div'); 
+        vacanciesWithSearchDiv.id = 'MainHolderDiv';
+        document.body.appendChild(vacanciesWithSearchDiv);
+        
+        searchInputDiv = document.createElement('div'); 
+        searchInputDiv.style.position = 'sticky';
+        searchInputDiv.style.top = '0';
+        searchInputDiv.style.left = '0px';
+        searchInputDiv.style.width = '99.8%';
+        searchInputDiv.style.height = '2em';
+        searchInputDiv.style.zIndex = '4';
+        searchInputDiv.style.backgroundColor = 'white';
+        vacanciesWithSearchDiv.appendChild(searchInputDiv);
+        
+        searchInputForm = document.createElement('form'); 
+        searchInputDiv.appendChild(searchInputForm);
+        
+        vacancyNameInput = document.createElement('input');
+        setAttributes(vacancyNameInput, {"type": "text", "value":"", "id":"vacancyName", "name":"vacancyName", "placeholder":"Name of the Vacancy"});
+        vacancyNameInput.setAttribute("type", "text");
+        vacancyNameInput.setAttribute("size", "10");
+        vacancyNameInput.setAttribute("placeholder", "Vacancy Name");
+        searchInputForm.appendChild(vacancyNameInput);
+        
+        vacancySalarySelect = document.createElement('select');
+        vacancySalarySelect.setAttribute("id", "mySelect");
+       	searchInputForm.appendChild(vacancySalarySelect);
+        
+        vacancyDateInput = document.createElement('input');
+        setAttributes(vacancyDateInput, {"type": "date", "id":"date", "name":"date"});   
+        searchInputForm.appendChild(vacancyDateInput);
+        
+        searchButton = document.createElement('button');
+        setAttributes(searchButton, {"onclick":"search();", "type":"button"});
+        searchButton.innerHTML = "SEARCH";
+        searchInputForm.appendChild(searchButton);
+        
+        resSearchButton = document.createElement('button');
+        //resSearchButton.setAttribute("class", "btn");
+        resSearchButton.innerHTML = "RESET";
+        searchInputForm.appendChild(resSearchButton);
+
+        vacanciesDiv = document.createElement('div');
+        vacanciesDiv.setAttribute("id", "container");
+        vacanciesWithSearchDiv.appendChild(vacanciesDiv);
+        
+        paginationDiv = document.createElement('div');
+        paginationDiv.style.position = 'sticky';
+        paginationDiv.style.bottom = '0';
+        paginationDiv.style.left = '0';
+        paginationDiv.style.width = '99.6%';
+        paginationDiv.style.height = '2em';
+        paginationDiv.style.zIndex = '4';
+        paginationDiv.style.backgroundColor = 'white';
+        vacanciesWithSearchDiv.appendChild(paginationDiv);
+
+        var onclicks = ["firstPage();", "previousPage();", "nextPage();", "lastPage();"];
+        var buttonIds = ["first", "previous", "next", "last"];
+        //var htmlInners = ["FirstPage", "PreviousPage", "NextPage", "LastPage"];
+        var htmlInners = ["First", "Previous", "Next", "Last"];
+        var buttons = new Array();
+        for(var i = 0; i < buttonIds.length; i++){
+            buttons.push('button' + i.toString());
+            buttons[i] = document.createElement('button');
+            setAttributes(buttons[i], {"class":"PaginationButton", "id":buttonIds[i], "onclick":onclicks[i]});
+            buttons[i].innerHTML = htmlInners[i];
+            paginationDiv.appendChild(buttons[i]);
+        }        
+        
+        recordsOnPageDiv = document.createElement('div');
+        recordsOnPageDiv.setAttribute("id", "Records_on_page");
+        paginationDiv.appendChild(recordsOnPageDiv);
+
+        pageSizeSelectText = document.createElement('span');
+        pageSizeSelectText.innerHTML = 'Records on page: ';
+        recordsOnPageDiv.appendChild(pageSizeSelectText); 
+        
+        pageSizeSelect = document.createElement('select');
+        pageSizeSelect.setAttribute("id", "sizeSelect");
+        pageSizeSelect.addEventListener("change", changePageSize);
+        pageSizeSelectText.appendChild(pageSizeSelect);                
+        
+        selectedVacanciesDiv = document.createElement('div');
+        selectedVacanciesDiv.id = 'SelectedHolder';
+        document.body.appendChild(selectedVacanciesDiv);
+
+        selectedPanelDiv = document.createElement('div');
+        selectedPanelDiv.id = 'selectedPanelDiv';
+        selectedVacanciesDiv.appendChild(selectedPanelDiv);
+        
+        clearSearchButton = document.createElement('button');
+        setAttributes(clearSearchButton, {"id":"ClearSearch", "class":"otherButtons", "onclick":"", "name":"ClearSearch"});
+        clearSearchButton.innerHTML = 'Clear Selection Panel';
+        clearSearchButton.style.float = 'left';
+        selectedPanelDiv.appendChild(clearSearchButton);
+        counterDiv = document.createElement('div');
+        setAttributes(counterDiv, {"id": "counter"});
+        counterDiv.innerHTML = '0';
+        selectedPanelDiv.appendChild(counterDiv);
+        
+        applyButton = document.createElement('button');
+        setAttributes(applyButton, {"id": "myBtn", "class":"otherButtons", "onclick":"displayModal();"});
+        applyButton.innerHTML = 'Apply';
+        selectedPanelDiv.appendChild(applyButton); 
+        
+        selectedVacanciesHolderDiv = document.createElement('div');
+        selectedVacanciesHolderDiv.setAttribute("id", "selectedJobs");
+        selectedVacanciesDiv.appendChild(selectedVacanciesHolderDiv);
+    }
+    
+    function changePageSize() {
+        size = document.getElementById("sizeSelect").value;
+        page = 1;
+        scrolling(page, size);
+    }   
+    
+    function search(){
+        var publishing_date = document.getElementById("date").value;  
+        var salary = document.getElementById("mySelect").value;
+        var JobName = document.getElementById("vacancyName").value; 
+        console.log('date: ' + publishing_date + '; ' + 'salary: ' + salary + '; ' + 'JobName: ' + JobName);
+        
+        var keys = new Array(10);
+        for(var i = 0; i < keys.length; i++) {
+            keys[i] = "";
+        }
+        
+        if (JobName !== null && JobName !== "") {
+            var jName = '\'' + JobName + '\'';
+            keys[0] = "name =" + jName + " ";
+        } else{
+            keys[0] = "";
+        }
+        
+        if (salary !== null && salary !== '') {
+            var sal = '\'' + salary + '\'';
+            keys[1] = "absi_dev__Salary__c =" + sal + " ";
+        } else{
+            keys[1] = '';
+        }    
+        
+        if (publishing_date !== null && publishing_date !== "") {
+            keys[2] = "DAY_ONLY(CreatedDate) = " + publishing_date + " ";
+        } else{
+            keys[2] = "";
+        }        
+        
+        var result = "";
+        keys.forEach(function(element) {
+            result = result + element;
+            console.log('result: ' + result);
+        });
+        
+        if (result.length > 0){
+            request = '';
+            var keywords = new Array();
+            
+            keys.forEach(function(element) {
+                if (element !== null && element !== '') keywords.push(element);
+            });  
+            
+            for(var i = 0; i < keywords.length; i++){
+                request = request + keywords[i];
+                if(i < (keywords.length - 1)) {
+                    request = request + "AND ";
+                }
+            }            
+            
+            var w_here = "where ";
+            var const1 = "Select Id, Name, absi_dev__Status__c, absi_dev__Salary__c From absi_dev__Job_Advertisement__c ";
+            var order = "ORDER BY name ";            
+            request = const1 + w_here + request + order;            
+            query = request;
+            getStartVacansyList(query);
+        }
+        
+    }   
+    
+    function formProcessing(){
+        
+        console.log('FileAsAString: ' + FileAsAString);
+        console.log('fileName: ' + fileName);
+        console.log('fileExtension: ' + fileExtension);
+        
+        FirstName = document.getElementById("FstName").value;   
+        LastName = document.getElementById("LastName").value;
+        ContactEmail = document.getElementById("CtcEmail").value;
+        ContactPhone = document.getElementById("CtcPhone").value;
+        DesiredSalary = document.getElementById("Des_Sal").value;
+        
+        Jobs = document.getElementsByClassName("sel");
+        jobIDs = new Array();
+        var tag = 'selectedJobs';
+        for(var i = 0; i < Jobs.length; i++){
+            var str = Jobs[i].id.slice(tag.length);
+            jobIDs.push(str);
+        }
+        
+        if(Jobs.length == 0) {alert('You have not selected any vacansy to apply!');} 
+        if(ContactEmail.length == 0) {alert('You have to type your candidate email!');} 
+        validate(ContactEmail);
+        if(testMail == true){
+            var candidate = new sforce.SObject("absi_dev__Candidate__c"); 
+            candidate.absi_dev__First_Name__c = FirstName; 
+            candidate.absi_dev__Last_Name__c = LastName;
+            candidate.absi_dev__Email__c = ContactEmail;
+            candidate.absi_dev__ContactPhone__c = ContactPhone;
+            candidate.absi_dev__DesiredSalary__c = DesiredSalary;
+            result = sforce.connection.upsert("absi_dev__Email__c", [candidate]);
+            result = sforce.connection.retrieve("Name", "absi_dev__Candidate__c", [result[0].id]); 
+            
+            if (!sforce) {
+                throw "unable to find sforce. Make sure that connection.js is loaded before apex.js script";
+            }
+            console.log(result[0].Id);      
+            console.log(sforce.connection.query("select Id, ContentLocation, PathOnClient, VersionData, Title, FirstPublishLocationId from ContentVersion where FirstPublishLocationId=" + '\'' + result[0].Id + '\''));
+            
+            var ContentVersions = sforce.connection.query("select Id, ContentLocation, PathOnClient, VersionData, Title, FirstPublishLocationId, ContentDocument.Id from ContentVersion where FirstPublishLocationId=" + '\'' + result[0].Id + '\'');
+            var cvIdList = new Array();        
+            var it = new sforce.QueryResultIterator(ContentVersions); 
+            while(it.hasNext()) { 
+                var record = it.next(); 
+                cvIdList.push(record.ContentDocument.Id);
+                console.log(record.ContentDocument.Id); 
+            }
+            var delResult = sforce.connection.deleteIds(cvIdList);
+            
+            if (result[0] != null) {
+                
+                var contVersion = new sforce.SObject("ContentVersion");
+                contVersion.ContentLocation = 'S';
+                contVersion.PathOnClient = fileName + fileExtension;
+                contVersion.VersionData = new sforce.Base64Binary(FileAsAString).toString();//myBlob; //atob(FileAsAString); //reader1.result;//photoFile;//FileAsAString;//reader.result;////thefileblob;//photoFile
+                console.log(contVersion.VersionData);
+                contVersion.Title = fileName;
+                contVersion.FirstPublishLocationId = result[0].Id; 
+                contVersion.IsMajorVersion = false;
+                console.log(contVersion);
+                var createResult = sforce.connection.create([contVersion]);
+                var retrieve_result = sforce.connection.retrieve("Id", "ContentVersion", [createResult[0].id]);
+                console.log(retrieve_result);
+                
+                /*
+                console.log('sforce.apex.execute');
+                sforce.apex.execute("absi_dev/FindJobPageScriptOnly","insertNewPhoto",
+                                            {cand_Mail:ContactEmail,
+                                             newfile:FileAsAString,
+                                             newfileName:fileName,
+                                             newfileextension:fileExtension});
+                                            
+                
+                //console.log(sforce.connection.query('select Id, ContentLocation, PathOnClient, VersionData, Title, FirstPublishLocationId from ContentVersion where FirstPublishLocationId=' + '\'' + result[0].id + '\''));
+                  */                         
+            }
+            
+            var doubleVacancyListQuery = "select absi_dev__Job_Advertisement__r.id from absi_dev__Job_Application__c where absi_dev__Candidate__r.absi_dev__Email__c = " + '\'' + ContactEmail + '\'' + " limit 200"; 
+            doubleVacancies1 = new Array();//Mock output
+            doubleVacancies = new Array();         
+            getDoubleVacansyList(doubleVacancyListQuery);
+        }
+    }
+    
+    function getDoubleVacansyList(query){
+        var startT = new Date().getTime() + 5000;
+        var state = { //state that you need when the callback is called
+            output : doubleVacancies1,
+            startTime : startT //new Date().getTime()
+        };
+        var callback = {
+            onSuccess: getResults,
+            onFailure: queryFailed,
+            source: state
+        };
+        sforce.connection.query(query, callback);
+    }    //getCurrentVacansyList function last braket
+    
+    function getResults(queryResult, source) {
+        doubleVacancies = [];
+        if (queryResult.size > 0) {
+            //var output = "";
+            var records = queryResult.getArray('records');
+            for (var i = 0; i < records.length; i++) {
+                let parameters = new Map([
+                    ['Vacancy ID',  records[i].get('absi_dev__Job_Advertisement__r').get('Id')]
+                ]);
+                doubleVacancies.push(parameters);                        
+            }
+            
+        }
+        showJobs();
+    }   
+    
+    function showJobs(){
+        serverVacancy = doubleVacancies;
+        var takenVacancy = jobIDs; //new Array();
+        doubleVacancy = new Array();
+        var count = 0;
+        for(i = 0; i < takenVacancy.length; i++){
+            for(j = 0; j < serverVacancy.length; j++){
+                if(serverVacancy[j].get('Vacancy ID') === takenVacancy[i]) {
+                    doubleVacancy[count] = takenVacancy[i];
+                    count = count + 1;
+                }
+            }
+        }
+        
+        if(doubleVacancy.length > 0) {
+            for(i = 0; i < doubleVacancy.length; i++){
+                var id = doubleVacancy[i].toString();
+                document.getElementById('selectedJobs' + doubleVacancy[i]).style.borderColor = 'red'; //borderWidth
+                document.getElementById('selectedJobs' + doubleVacancy[i]).style.borderWidth = '2px';
+            }
+            alert('Selected previously vacancies are highlited with red border. Change your choice as you can not select them twice');
+        } else {
+            
+            var jobApps = new Array();
+            
+            for(var i = 0; i < takenVacancy.length; i++){
+                var jobApp = new sforce.SObject("absi_dev__Job_Application__c"); 
+                jobApp.absi_dev__Job_Advertisement__c = takenVacancy[i]; 
+                jobApp.absi_dev__Candidate__c = result[0].Id; 
+                jobApp.Name = result[0].Name + '_' + takenVacancy[i];
+                jobApps.push(jobApp);
+            }  
+            var results = sforce.connection.create(jobApps); 
+            console.log(results.length);
+            console.log(Jobs.length);
+            if(Jobs.length == results.length){
+                closeModal();
+                alert('You have applied selected vacancies successfully');
+            }else{
+                closeModal();
+                alert('There was an error applying selected vacancies. Try again');
+            }
+        }
+    }
+    
+    function validate(ContactEmail) {
+        var reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+        var address = ContactEmail;
+        
+        if(reg.test(address) == false) {
+            alert('Введите корректный e-mail');
+            testMail = false;
+            return false;
+        }else {testMail = true;} 
+    }      
+    
+    </script>
+    
+</apex:page>
